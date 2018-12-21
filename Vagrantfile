@@ -1,5 +1,5 @@
 Vagrant.configure("2") do |config|
-  config.vm.provision "shell", inline: "echo Hello"
+  config.vm.network "private_network", type: "dhcp"
 
   config.vm.define "web" do |web|
     web.vm.box = "generic/ubuntu1804"
