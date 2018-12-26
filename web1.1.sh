@@ -12,7 +12,13 @@ sudo sed -i 's/^MaxSpareServers.*/MaxSpareServers  40/' /etc/apache2/mods-availa
 sudo sed -i 's/^MaxRequestWorkers.*/MaxRequestWorkers  200/' /etc/apache2/mods-available/mpm_prefork.conf
 sudo sed -i 's/^MaxConnectionsPerChild.*/MaxConnectionsPerChild  10000/' /etc/apache2/mods-available/mpm_prefork.conf
 
-export SITE_NAME="${SITE_NAME:blupress}"
+
+sudo mkdir -p /var/www/html/blupress.com/{public_html,logs}
+
+sudo a2ensite blupress.com
+
+cd /var/www/html/blupress.com/public_html
+
 
 sudo mkdir -p /var/www/html/blupress.com/src/
 cd /var/www/html/blupress.com/src/
@@ -30,3 +36,5 @@ sudo mv latest.tar.gz wordpress-`date "+%Y-%m-%d"`.tar.gz
 sudo mv wordpress/* ../public_html/
 
 sudo chown -R www-data:www-data /var/www/html/blupress.com/public_html
+
+cd /var/www/html/blupress.com/public_html/wp-config.php

@@ -6,6 +6,7 @@ Vagrant.configure("2") do |config|
     web.vm.network "forwarded_port", guest: 80, host: 8080
     web.vm.provision "file", source: "variables.sh", destination: "/tmp/variables.sh"
     web.vm.provision "shell", path: "web.sh"
+    web.vm.provision "shell", path: "web1.0.sh"
     web.vm.provider :virtualbox do |vb|
       vb.customize [
         "modifyvm", :id,
