@@ -1,40 +1,83 @@
 #!/bin/bash
 source /tmp/variables.sh
-sudo apt-get update
-sudo apt-get upgrade -y
-sudo apt install apache2 mysql-client php7.2 libapache2-mod-php7.2 php-mysql php-curl php-json php-cgi -y
-sudo sed -i 's/^KeepAlive .*/KeepAlive On/' /etc/apache2/apache2.conf
-sudo sed -i 's/^MaxKeepAliveRequests.*/MaxKeepAliveRequests 50/' /etc/apache2/apache2.conf
-sudo sed -i 's/^KeepAliveTimeout.*/KeepAliveTimeout 5/' /etc/apache2/apache2.conf
-sudo sed -i 's/^StartServers.*/StartServers  4/' /etc/apache2/mods-available/mpm_prefork.conf
-sudo sed -i 's/^MinSpareServers.*/MinSpareServers  3/' /etc/apache2/mods-available/mpm_prefork.conf
-sudo sed -i 's/^MaxSpareServers.*/MaxSpareServers  40/' /etc/apache2/mods-available/mpm_prefork.conf
-sudo sed -i 's/^MaxRequestWorkers.*/MaxRequestWorkers  200/' /etc/apache2/mods-available/mpm_prefork.conf
-sudo sed -i 's/^MaxConnectionsPerChild.*/MaxConnectionsPerChild  10000/' /etc/apache2/mods-available/mpm_prefork.conf
 
 
-sudo mkdir -p /var/www/html/blupress.com/{public_html,logs}
-
-sudo a2ensite blupress.com
-
-cd /var/www/html/blupress.com/public_html
+sudo mkdir -p $SITE_ROOT_DIR/{public_html,logs}
 
 
-sudo mkdir -p /var/www/html/blupress.com/src/
-cd /var/www/html/blupress.com/src/
-sudo chown -R www-data:www-data /var/www/html/blupress.com/
+cd $SITE_ROOT_DIR/public_html
 
-sudo wget http://wordpress.org/latest.tar.gz
-sudo -u www-data tar -xvf latest.tar.gz
 
-mysql -u wpuser -h 172.28.128.4 -p
-status;
-exit
+sudo mkdir -p $SITE_ROOT_DIR/src/
+cd $SITE_ROOT_DIR/src/
+sudo chown -R www-data:www-data $SITE_ROOT_DIR/
 
-sudo mv latest.tar.gz wordpress-`date "+%Y-%m-%d"`.tar.gz
+sudo wget -O /tmp/wordpress.tar.gz http://wordpress.org/latest.tar.gz
+sudo -u www-data tar -xvf /tmp/wordpress.tar.gz --strip-components=1 -C $SITE_ROOT_DIR/public_html
+sudo chown -R www-data:www-data $SITE_ROOT_DIR/public_html
 
-sudo mv wordpress/* ../public_html/
+cat > /etc/apache2/sites-enabled/example.conf << EOL
+<Directory $SITE_ROOT_DIR/public_html>
+        Require all granted
+</Directory>
+<VirtualHost *:80>
+        ServerName $HOSTNAME
+        ServerAlias www.$HOSTNAME
+        ServerAdmin webmaster@localhost
+        DocumentRoot $SITE_ROOT_DIR/public_html
 
-sudo chown -R www-data:www-data /var/www/html/blupress.com/public_html
+        ErrorLog $SITE_ROOT_DIR/logs/error.log
+        CustomLog $SITE_ROOT_DIR/logs/access.log combined
 
-cd /var/www/html/blupress.com/public_html/wp-config.php
+</VirtualHost>
+EOL
+
+cat > $SITE_ROOT_DIR/public_html/wp-config.php << EOL
+<?php
+
+
+// ** MySQL settings - You can get this info from your web host ** //
+/** The name of the database for WordPress */
+define( 'DB_NAME', '$DB_NAME' );
+
+/** MySQL database username */
+define( 'DB_USER', '$DB_USER' );
+
+/** MySQL database password */
+define( 'DB_PASSWORD', '$DB_PASSWORD' );
+
+/** MySQL hostname */
+define( 'DB_HOST', '$DBHOST' );
+
+/** Database Charset to use in creating database tables. */
+define( 'DB_CHARSET', 'utf8' );
+
+/** The Database Collate type. Don't change this if in doubt. */
+define( 'DB_COLLATE', '' );
+
+
+define( 'AUTH_KEY',         '$AUTH_KEY' );
+define( 'SECURE_AUTH_KEY',  '$SECURE_AUTH_KEY' );
+define( 'LOGGED_IN_KEY',    '$LOGGED_IN_KEY' );
+define( 'NONCE_KEY',        '$NONCE_KEY' );
+define( 'AUTH_SALT',        '$AUTH_SALT' );
+define( 'SECURE_AUTH_SALT', '$SECURE_AUTH_KEY' );
+define( 'LOGGED_IN_SALT',   '$LOGGED_IN_SALT' );
+define( 'NONCE_SALT',       '$NONCE_SALT' );
+
+
+$table_prefix = 'wp_';
+
+
+define( 'WP_DEBUG', false );
+
+/* That's all, stop editing! Happy blogging. */
+
+/** Absolute path to the WordPress directory. */
+if ( ! defined( 'ABSPATH' ) ) {
+	define( 'ABSPATH', dirname( __FILE__ ) . '/' );
+}
+
+/** Sets up WordPress vars and included files. */
+require_once( ABSPATH . 'wp-settings.php' );
+EOL

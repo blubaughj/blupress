@@ -1,13 +1,11 @@
 #!/bin/bash
 source /tmp/variables.sh
-sudo apt-get update
-sudo apt-get upgrade -y
-sudo apt install apache2 mysql-client php7.2 libapache2-mod-php7.2 php-mysql php-curl php-json php-cgi -y
-sudo sed -i 's/^KeepAlive .*/KeepAlive On/' /etc/apache2/apache2.conf
-sudo sed -i 's/^MaxKeepAliveRequests.*/MaxKeepAliveRequests 50/' /etc/apache2/apache2.conf
-sudo sed -i 's/^KeepAliveTimeout.*/KeepAliveTimeout 5/' /etc/apache2/apache2.conf
-sudo sed -i 's/StartServers.*/StartServers  4/' /etc/apache2/mods-available/mpm_prefork.conf
-sudo sed -i 's/MinSpareServers.*/MinSpareServers  3/' /etc/apache2/mods-available/mpm_prefork.conf
-sudo sed -i 's/MaxSpareServers.*/MaxSpareServers  40/' /etc/apache2/mods-available/mpm_prefork.conf
-sudo sed -i 's/MaxRequestWorkers.*/MaxRequestWorkers  200/' /etc/apache2/mods-available/mpm_prefork.conf
-sudo sed -i 's/MaxConnectionsPerChild.*/MaxConnectionsPerChild  10000/' /etc/apache2/mods-available/mpm_prefork.conf
+sudo a2dismod mpm_event
+sudo a2enmod mpm_prefork
+
+
+sudo sed -i 's/error_reporting .*/error_reporting E_COMPILE_ERROR | E_RECOVERABLE_ERROR | E_ERROR | E_CORE_ERROR/' /etc/php/7.2/apache2/php.ini
+sudo sed -i 's/max_input_time .*/error_reporting 30/' /etc/php/7.2/apache2/php.ini
+sudo sed -i 's/error_log .*/error_log /var/log/php/error.log/' /etc/php/7.2/apache2/php.ini
+
+sudo systemctl restart apache2
