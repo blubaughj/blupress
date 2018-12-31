@@ -1,9 +1,7 @@
 #!/bin/bash
 source /tmp/variables.sh
 
-
 sudo mkdir -p $SITE_ROOT_DIR/{public_html,logs}
-
 
 cd $SITE_ROOT_DIR/public_html
 
